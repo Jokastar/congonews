@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+      "lint": "eslint"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
   },
   "dependencies": {
+    "@google/genai": "^1.41.0",
     "@mozilla/readability": "^0.6.0",
     "apify-client": "^2.22.1",
     "https-proxy-agent": "^7.0.6",
@@ -17,12 +18,15 @@
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "25.2.3",
     "@types/react": "19.2.14",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4"
-  }
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "tailwindcss": "^4",
+    "vitest": "^4.0.18"
+  },
+  "type": "module"
 }
