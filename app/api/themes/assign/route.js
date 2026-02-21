@@ -42,29 +42,28 @@ export async function POST(req) {
     if (!Array.isArray(items)) {
       items = await readDB()
     }
-    // Only process items with text
-    items = items.filter(x => x && (x.text || (x.article && x.article.text)))
+    // Only process items with tweet description or article text
+    items = items.filter(x => x && (x.description || (x.article && x.article.text)))
     // Compute centroids
     const centroids = await getThemeCentroids()
-    const threshold = parseFloat(process.env.THEME_SIMILARITY_THRESHOLD || '0.75')
+    const threshold = parseFloat(process.env.THEME_SIMILARITY_THRESHOLD || '0.5')
     let updated = 0
     for (const item of items) {
-      const text = [item.text, item.article?.text].filter(Boolean).join('\n')
-      if (!text) continue
-      // Compute embedding if missing
-      if (!item.embedding) {
-        try {
-          item.embedding = await getEmbedding(text)
-        } catch (e) {
-          item.theme = 'embedding_error'
-          continue
-        }
+      // Only embed the description field (tweet text)
+      const tweetText = item.description
+      if (!tweetText) continue
+      // Always recompute embedding for all items (as requested)
+      try {
+        item.embedding = await getEmbedding(tweetText)
+      } catch (e) {
+        item.theme = 'embedding_error'
+        delete item.theme_scores
+        continue
       }
       // Assign theme by max similarity
-      let bestTheme = null, bestScore = -1, scores = {}
+      let bestTheme = null, bestScore = -1
       for (const [theme, centroid] of Object.entries(centroids)) {
         const sim = cosineSim(item.embedding, centroid)
-        scores[theme] = sim
         if (sim > bestScore) {
           bestScore = sim
           bestTheme = theme
@@ -72,11 +71,10 @@ export async function POST(req) {
       }
       if (bestScore >= threshold) {
         item.theme = bestTheme
-        item.theme_scores = scores
       } else {
-        item.theme = 'other'
-        item.theme_scores = scores
+        delete item.theme
       }
+      delete item.theme_scores
       updated++
     }
     // Save back to db.json if not just a dry run

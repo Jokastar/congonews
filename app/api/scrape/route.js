@@ -1,4 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'; 
+import journalistList from '../../../lib/journalistList.js';
+import cleanText from '../../../lib/cleanText.js';
 
 // This route uses Bright Data HTTP API only. Ensure the following env vars are set:
 // BRIGHTDATA_API_URL and BRIGHTDATA_API_TOKEN
@@ -19,16 +21,14 @@ export async function GET() {
   // Build request body to match the fields you asked for
   const inputs = [
     {
-      urls: [
-        'https://x.com/StanysBujakera'
-      ],
+      urls: journalistList,
       start_date: '',
       end_date: '',
     },
   ]
 
   const custom_output_fields = [
-    'id','user_posted','name','description','date_posted','photos','url','external_url','external_image_urls','videos','external_video_urls','user_id','timestamp','discovery_input','input','error','error_code','warning','warning_code'
+    'id','user_posted','name','description','date_posted','photos','url','external_url','external_image_urls','videos','external_video_urls','user_id','timestamp','input','error','error_code','warning','warning_code'
   ]
 
   const body = {
@@ -116,20 +116,35 @@ export async function GET() {
             })
             const bodyText = await df.text()
             try {
-              const resultJson = JSON.parse(bodyText)
-
+              let resultJson = JSON.parse(bodyText)
+              // Remove discovery_input and clean article.text
+              resultJson = resultJson.map(item => {
+                const newItem = { ...item }
+                delete newItem.discovery_input
+                if (newItem.article && typeof newItem.article.text === 'string') {
+                  newItem.article.text = cleanText(newItem.article.text)
+                }
+                return newItem
+              })
               // Fire-and-forget: enrich snapshot items using local enricher endpoint
               try {
-                const enrichUrl = `${process.env.INTERNAL_BASE_URL || 'http://127.0.0.1:3000'}/api/enrich/batch`
-                fetch(enrichUrl, {
+                const baseUrl = process.env.INTERNAL_BASE_URL || 'http://127.0.0.1:3000'
+                const enrichUrl = `${baseUrl}/api/enrich/batch`
+                await fetch(enrichUrl, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ items: resultJson }),
-                }).catch((e) => console.error('Enrich POST failed:', e))
+                })
+                // After enriching, trigger embedding/classification
+                const assignUrl = `${baseUrl}/api/themes/assign`
+                fetch(assignUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ dry: false })
+                }).catch((e) => console.error('Assign POST failed:', e))
               } catch (hookErr) {
-                console.error('Failed to dispatch enrich job:', hookErr)
+                console.error('Failed to dispatch enrich/assign job:', hookErr)
               }
-
               return NextResponse.json({ source: 'brightdata', triggerResponse, snapshot: progressJson, result: resultJson })
             } catch (parseErr) {
               return NextResponse.json({ source: 'brightdata', triggerResponse, snapshot: progressJson, result_raw: bodyText })
