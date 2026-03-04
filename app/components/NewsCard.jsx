@@ -1,0 +1,5 @@
+function NewsCard({item}){
+    return(
+        <></>
+    )
+}

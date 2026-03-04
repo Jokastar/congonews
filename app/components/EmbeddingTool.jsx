@@ -8,7 +8,7 @@ export default function EmbeddingTool() {
   const getEmbedding = async () => {
     setError(null);
     setResult(null);
-    const res = await fetch("/api/embed", {
+    const res = await fetch("/api/articles/embed-text", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),

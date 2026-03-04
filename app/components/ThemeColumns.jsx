@@ -31,11 +31,13 @@ export default function ThemeColumns() {
   return (
     <div className="flex flex-wrap gap-6 mt-8">
       {themes.map(([theme, items]) => (
-        <div key={theme} className="flex-1 min-w-[320px] bg-gray-50 rounded shadow p-4">
+        <div key={theme} className="p-4">
           <h2 className="text-xl font-bold mb-2 capitalize">{theme}</h2>
-          {items.map(item => (
+          <div className="grid grid-cols-3 gap-2">
+            {items.map(item => (
             <SourceCard key={item.id} item={item} />
           ))}
+          </div>
         </div>
       ))}
     </div>
@@ -45,7 +47,8 @@ export default function ThemeColumns() {
 function SourceCard({ item }) {
   if (item.article) {
     return (
-      <a href={item.external_url} target="_blank" rel="noopener noreferrer" className="block border-b py-2 hover:bg-green-50">
+
+      <a href={item.external_url} target="_blank" rel="noopener noreferrer" className="block">
         <div className="font-semibold">{item.article?.title}</div>
         <div className="text-xs text-gray-500">{item.article?.published_at}</div>
         <div>{item.article?.text?.slice(0, 200)}...</div>

@@ -11,7 +11,7 @@ export default function EmbeddingAllTweetsButton() {
     setError(null)
     setResult(null)
     try {
-      const res = await fetch("/api/themes/assign", {
+      const res = await fetch("/api/themes/classify-articles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dry: false }) // triggers embedding/classification for all in db.json
