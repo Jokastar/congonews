@@ -208,14 +208,17 @@ export async function GET() {
             })
           }
 
-          const updatedData = [...existingData, ...newTweets]
+          const existingIds = new Set(existingData.map(item => item.id))
+          const deduplicatedNewTweets = newTweets.filter(item => !existingIds.has(item.id))
+          const updatedData = [...existingData, ...deduplicatedNewTweets]
           await writeDB(updatedData)
           
           return NextResponse.json({ 
             source: 'brightdata', 
             snapshotId,
             tweets: snapshotItems,
-            saved: newTweets.length
+            saved: deduplicatedNewTweets.length,
+            duplicatesSkipped: newTweets.length - deduplicatedNewTweets.length
           })
         }
 
