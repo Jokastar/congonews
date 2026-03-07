@@ -3,6 +3,7 @@
 import NewsFetcher from "./components/NewsFetcher"
 import DeleteAllDataButton from "./components/DeleteAllDataButton"
 import GenerateCentroidsButton from "./components/GenerateCentroidsButton"
+import NewsApiFetcher from "./components/NewsApiFetcher"
 import { ArticleProvider, useArticles } from "./context/ArticleContext"
 
 function ArticleGrid() {
@@ -33,14 +34,25 @@ function ArticleGrid() {
             <span className="text-sm font-semibold leading-tight line-clamp-1">{article.name}</span>
           </div>
 
-          {/* Article image */}
-          {article.external_image_urls?.[0] && (
+          {/* Article image or video */}
+          {article.videos?.[0]?.video_url ? (
+            <video
+              src={`/api/video-proxy?url=${encodeURIComponent(article.videos[0].video_url)}`}
+              className="w-full aspect-video object-cover rounded"
+              controls
+              muted
+              playsInline
+              onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            />
+          ) : article.external_image_urls?.[0] ? (
             <img
               src={article.external_image_urls[0]}
               alt="Article"
-              className="w-full aspect-video object-cover"
+              className="w-full aspect-video object-cover rounded"
             />
-          )}
+          ) : null}
 
           {/* Tweet text */}
           <p className="text-sm p-3 flex-1 line-clamp-4">{article.description}</p>
@@ -48,10 +60,21 @@ function ArticleGrid() {
           {/* Source */}
           <div className="flex items-center justify-between px-3 pb-3 text-xs text-gray-400">
             <div className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.252 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-              <span>X (Twitter)</span>
+              {article.source === 'newsapi' ? (
+                <>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4 22V4h16v18H4zm2-2h12V6H6v14zm2-3h8v-2H8v2zm0-4h8v-2H8v2zm0-4h8V7H8v2z"/>
+                  </svg>
+                  <span>{article.name}</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.252 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  <span>X (Twitter)</span>
+                </>
+              )}
             </div>
             {article.date_posted && (
               <span>{new Date(article.date_posted).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -70,6 +93,7 @@ export default function Home() {
         <h1>Congo News</h1>
         <div className="mb-4 space-y-2">
           <NewsFetcher />
+          <NewsApiFetcher />
           <GenerateCentroidsButton />
           <DeleteAllDataButton />
         </div>
