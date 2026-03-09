@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getEmbedding } from '../../../../lib/embeddings.js'
 
+// POST /api/feed/embed-text
+// Generates a vector embedding for a given text string.
+// Body: { text: string }
+
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}))

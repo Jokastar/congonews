@@ -1,12 +1,17 @@
 "use client"
 import { createContext, useContext, useState, useEffect } from "react"
 
-const ArticleContext = createContext()
+const FeedContext = createContext()
 
-export function ArticleProvider({ children }) {
+export function FeedProvider({ children }) {
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [activeTheme, setActiveTheme] = useState(null)
+
+  const filteredArticles = activeTheme
+    ? articles.filter((a) => a.theme === activeTheme)
+    : articles
 
   const buildApiErrorMessage = (stepName, responseData, fallbackMessage) => {
     if (!responseData || typeof responseData !== "object") {
@@ -18,7 +23,6 @@ export function ArticleProvider({ children }) {
       const detailedError =
         (typeof firstError === "object" && (firstError.error || firstError.message)) ||
         String(firstError)
-
       return `${stepName}: ${responseData.error || fallbackMessage} (${detailedError})`
     }
 
@@ -34,19 +38,18 @@ export function ArticleProvider({ children }) {
     return `${stepName}: ${baseMsg}`
   }
 
-  // Load articles from Supabase on mount
-  useEffect(() => {
-    const loadArticles = async () => {
-      try {
-        const res = await fetch("/api/news")
-        const data = await res.json()
-        setArticles(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error("Failed to load articles:", err)
-      }
+  // Load feed items from Supabase on mount
+  const refreshFeed = async () => {
+    try {
+      const res = await fetch("/api/feed")
+      const data = await res.json()
+      setArticles(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error("Failed to load feed:", err)
     }
-    loadArticles()
-  }, [])
+  }
+
+  useEffect(() => { refreshFeed() }, [])
 
   const fetchAndEnrichNews = async () => {
     setLoading(true)
@@ -54,26 +57,26 @@ export function ArticleProvider({ children }) {
     try {
       const pipelineErrors = []
 
-      // Step 1: Scrape news from journalists
-      const scrapeRes = await fetch("/api/articles/scrape-from-journalists", { method: "GET" })
+      // Step 1: Import tweets from X via BrightData
+      const scrapeRes = await fetch("/api/feed/import-from-x", { method: "GET" })
       const scrapeData = await scrapeRes.json()
-      
+
       if (!scrapeRes.ok) {
-        throw new Error(buildApiErrorMessage("Scrape", scrapeData, "Failed to scrape news"))
+        throw new Error(buildApiErrorMessage("Import from X", scrapeData, "Failed to import tweets"))
       }
 
-      // Step 2: Auto-enrich with embeddings
-      const enrichRes = await fetch("/api/articles/generate-embeddings", { method: "POST" })
+      // Step 2: Generate embeddings for new items
+      const enrichRes = await fetch("/api/feed/generate-embeddings", { method: "POST" })
       const enrichData = await enrichRes.json()
-      
+
       if (!enrichRes.ok) {
         const enrichmentError = buildApiErrorMessage("Embeddings", enrichData, "Failed to generate embeddings")
         pipelineErrors.push(enrichmentError)
-        console.warn("Enrichment partially failed:", enrichmentError)
+        console.warn("Embeddings partially failed:", enrichmentError)
       }
 
-      // Step 3: Auto-classify articles by theme
-      const classifyRes = await fetch("/api/themes/classify-articles", { method: "POST" })
+      // Step 3: Classify items by theme
+      const classifyRes = await fetch("/api/themes/classify", { method: "POST" })
       const classifyData = await classifyRes.json()
 
       if (!classifyRes.ok) {
@@ -86,14 +89,12 @@ export function ArticleProvider({ children }) {
         setError(pipelineErrors.join(" | "))
       }
 
-      // Step 4: Reload articles
-      const getRes = await fetch("/api/news")
-      const freshData = await getRes.json()
-      setArticles(Array.isArray(freshData) ? freshData : [])
+      // Step 4: Reload feed
+      await refreshFeed()
 
       return { scrapeData, enrichData, classifyData }
     } catch (err) {
-      const errorMsg = err.message || "Error fetching news"
+      const errorMsg = err.message || "Error fetching feed"
       setError(errorMsg)
       throw err
     } finally {
@@ -102,16 +103,16 @@ export function ArticleProvider({ children }) {
   }
 
   return (
-    <ArticleContext.Provider value={{ articles, setArticles, loading, error, fetchAndEnrichNews }}>
+    <FeedContext.Provider value={{ articles, setArticles, filteredArticles, loading, error, fetchAndEnrichNews, refreshFeed, activeTheme, setActiveTheme }}>
       {children}
-    </ArticleContext.Provider>
+    </FeedContext.Provider>
   )
 }
 
-export function useArticles() {
-  const context = useContext(ArticleContext)
+export function useFeed() {
+  const context = useContext(FeedContext)
   if (!context) {
-    throw new Error("useArticles must be used within ArticleProvider")
+    throw new Error("useFeed must be used within FeedProvider")
   }
   return context
 }

@@ -2,36 +2,32 @@
 
 import { useState } from 'react'
 
-export default function GenerateCentroidsButton() {
+export default function RebuildThemeCentroidsButton() {
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState(null)
   const [error, setError] = useState(null)
 
-  const handleGenerateCentroids = async () => {
+  const handleRebuild = async () => {
     setIsLoading(true)
     setStatus(null)
     setError(null)
 
     try {
-      const response = await fetch('/api/themes/create-theme-centroids', {
+      const response = await fetch('/api/themes/centroids', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate centroids')
+        throw new Error(data.error || 'Failed to rebuild centroids')
       }
 
       setStatus(data.message)
-      console.log('Centroids generated:', data.centroids)
     } catch (err) {
       setError(err.message)
-      console.error('Error generating centroids:', err)
     } finally {
       setIsLoading(false)
     }
@@ -40,11 +36,11 @@ export default function GenerateCentroidsButton() {
   return (
     <div className="mb-4">
       <button
-        onClick={handleGenerateCentroids}
+        onClick={handleRebuild}
         disabled={isLoading}
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
       >
-        {isLoading ? 'Generating Centroids...' : 'Generate Theme Centroids'}
+        {isLoading ? 'Rebuilding Theme Centroids...' : 'Rebuild Theme Centroids'}
       </button>
 
       {status && (

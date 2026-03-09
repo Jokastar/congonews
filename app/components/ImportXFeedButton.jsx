@@ -1,12 +1,12 @@
 "use client"
 import { useState } from "react"
-import { useArticles } from "../context/ArticleContext"
+import { useFeed } from "../context/FeedContext"
 
-export default function NewsFetcher() {
-  const { fetchAndEnrichNews, loading, error } = useArticles()
+export default function ImportXFeedButton() {
+  const { fetchAndEnrichNews, loading, error } = useFeed()
   const [result, setResult] = useState(null)
 
-  const handleFetchNews = async () => {
+  const handleImport = async () => {
     try {
       const data = await fetchAndEnrichNews()
       setResult(data)
@@ -18,18 +18,18 @@ export default function NewsFetcher() {
   return (
     <div className="mb-4">
       <button
-        onClick={handleFetchNews}
+        onClick={handleImport}
         className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-green-700"
         disabled={loading}
       >
-        {loading ? "Fetching & Enriching..." : "Fetch Latest News"}
+        {loading ? "Importing & Enriching..." : "Import from X"}
       </button>
       {error && <div className="text-red-500 mt-2 text-sm">{error}</div>}
       {result && (
         <div className="text-xs text-gray-600 mt-2">
-          <p>✓ Scraped {result.scrapeData?.saved || 0} new articles</p>
-          <p>✓ Generated embeddings for {result.enrichData?.enrichedCount || 0} articles</p>
-          <p>✓ Assigned themes for {result.classifyData?.updated || 0} tweets</p>
+          <p>✓ Imported {result.scrapeData?.saved || 0} new tweets</p>
+          <p>✓ Generated embeddings for {result.enrichData?.enrichedCount || 0} items</p>
+          <p>✓ Classified {result.classifyData?.updated || 0} items by theme</p>
         </div>
       )}
     </div>

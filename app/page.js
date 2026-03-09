@@ -1,26 +1,30 @@
 "use client"
 
-import NewsFetcher from "./components/NewsFetcher"
-import DeleteAllDataButton from "./components/DeleteAllDataButton"
-import GenerateCentroidsButton from "./components/GenerateCentroidsButton"
-import NewsApiFetcher from "./components/NewsApiFetcher"
-import ArticleGrid from "./components/ArticleGrid"
-import { ArticleProvider } from "./context/ArticleContext"
+import ImportXFeedButton from "./components/ImportXFeedButton"
+import ClearFeedButton from "./components/ClearFeedButton"
+import ImportNewsApiButton from "./components/ImportNewsApiButton"
+import FeedGrid from "./components/FeedGrid"
+import SourcesManager from "./components/SourcesManager"
+import ThemeFilterBar from "./components/ThemeFilterBar"
+import EnrichMissingButton from "./components/EnrichMissingButton"
+import { FeedProvider } from "./context/FeedContext"
 
 export default function Home() {
   return (
-    <ArticleProvider>
+    <FeedProvider>
       <main>
         <h1>Congo News</h1>
         <div className="mb-4 space-y-2">
-          <NewsFetcher />
-          <NewsApiFetcher />
-          <GenerateCentroidsButton />
-          <DeleteAllDataButton />
+          <ImportXFeedButton />
+          <ImportNewsApiButton />
+          <ClearFeedButton />
+          <SourcesManager />
+          <EnrichMissingButton />
         </div>
-        <ArticleGrid />
+        <ThemeFilterBar />
+        <FeedGrid />
       </main>
-    </ArticleProvider>
+    </FeedProvider>
   )
 }
 

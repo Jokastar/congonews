@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase.js';
 import { getEmbedding } from '../../../../lib/embeddings.js';
 
+// POST /api/feed/generate-embeddings
+// Generates vector embeddings for all articles and tweets that don't have one yet.
+
 async function generateEmbedding(content) {
   try {
     return await getEmbedding(content);
@@ -13,7 +16,7 @@ async function generateEmbedding(content) {
 
 export async function POST() {
   try {
-    // Step 1: Fetch records without embeddings from both tables
+    // Fetch records without embeddings from both tables
     const [{ data: articleRows, error: e1 }, { data: tweetRows, error: e2 }] = await Promise.all([
       supabase.from('articles').select('*').is('embedding', null),
       supabase.from('tweets').select('*').is('embedding', null),
@@ -31,7 +34,6 @@ export async function POST() {
       return NextResponse.json({ message: 'All records already have embeddings', enrichedCount: 0 });
     }
 
-    // Step 2: Generate and save embeddings one by one
     let enrichedCount = 0;
     for (const record of allWithout) {
       const { _table, ...row } = record;
@@ -55,21 +57,15 @@ export async function POST() {
       }
 
       enrichedCount++;
-      console.log(`Generated embedding for: ${row.title || row.id}`);
     }
 
     return NextResponse.json({
-      message: `Successfully generated embeddings for ${enrichedCount} records`,
+      message: `Generated embeddings for ${enrichedCount} records`,
       enrichedCount,
       totalWithout: allWithout.length,
       skipped: allWithout.length - enrichedCount,
     });
-
   } catch (error) {
-    console.error('Embedding generation error:', error);
-    return NextResponse.json({
-      error: 'Failed to generate embeddings',
-      message: error.message
-    }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

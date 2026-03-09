@@ -2,7 +2,7 @@
 
 import ImageCarousel from "./ImageCarousel"
 
-export default function ArticleCard({ article }) {
+export default function FeedItemCard({ article }) {
   return (
     <a
       href={article.url}
@@ -59,11 +59,13 @@ export default function ArticleCard({ article }) {
 
       {/* Title (NewsAPI only) */}
       {article.title && (
-        <p className="text-sm font-semibold mt-2 line-clamp-2">{article.title}</p>
+        <p className="text-sm font-bold mt-2 leading-snug line-clamp-3">{article.title}</p>
       )}
 
-      {/* Description / tweet text */}
-      <p className="text-sm mt-1 text-gray-700">{article.description}</p>
+      {/* Description / tweet text — hide if identical to title */}
+      {article.description && article.description !== article.title && (
+        <p className="text-sm mt-1 text-gray-600 line-clamp-4">{article.description}</p>
+      )}
 
       {/* Source footer */}
       <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
@@ -88,6 +90,15 @@ export default function ArticleCard({ article }) {
           <span>{new Date(article.date_posted).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
         )}
       </div>
+
+      {/* Theme badge */}
+      {article.theme && (
+        <div className="mt-2">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
+            {article.theme.replace("_", " ")}
+          </span>
+        </div>
+      )}
     </a>
   )
 }
