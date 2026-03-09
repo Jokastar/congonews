@@ -18,9 +18,9 @@ export default function NewsApiFetcher() {
       } else {
         setStatus(`✓ Saved ${data.saved} new articles (${data.duplicatesSkipped} duplicates skipped)`)
         // Reload articles
-        const reload = await fetch("/api/articles/get-all")
+        const reload = await fetch("/api/news")
         const fresh = await reload.json()
-        setArticles(fresh.items || [])
+        setArticles(Array.isArray(fresh) ? fresh : [])
       }
     } catch (err) {
       setStatus(`Error: ${err.message}`)

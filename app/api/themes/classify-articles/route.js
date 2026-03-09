@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { readDB, writeDB } from '../../../../lib/db'
+import { supabase } from '../../../../lib/supabase.js'
 import { getEmbedding } from '../../../../lib/embeddings'
-import { createClient } from '@supabase/supabase-js'
 
 // Step 1: Calculate cosine similarity between two embedding vectors
 function cosineSim(vectorA, vectorB) {
@@ -37,21 +36,8 @@ function normalizeVectorDimensions(vector, targetDimensions) {
   return [...vector, ...new Array(targetDimensions - vector.length).fill(0)]
 }
 
-// Step 4: Initialize Supabase client from environment variables
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY')
-  }
-
-  return createClient(supabaseUrl, supabaseServiceRoleKey)
-}
-
-// Step 5: Load theme centroids from Supabase table
+// Step 4: Load theme centroids from Supabase table
 async function getThemeCentroidsFromSupabase() {
-  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from('theme_centroids')
     .select('theme_name, centroid_vector, embedding_dimensions')
@@ -79,10 +65,16 @@ export async function POST(req) {
     // Step 6: Parse request body
     const requestBody = await req.json().catch(() => ({}))
     
-    // Step 7: Get items from request body or load from database
+    // Step 7: Get items from request body or load from Supabase
     let itemsToProcess = requestBody.items
     if (!Array.isArray(itemsToProcess)) {
-      itemsToProcess = await readDB()
+      const [{ data: articleRows, error: e1 }, { data: tweetRows, error: e2 }] = await Promise.all([
+        supabase.from('articles').select('*'),
+        supabase.from('tweets').select('*'),
+      ])
+      if (e1) throw new Error(e1.message)
+      if (e2) throw new Error(e2.message)
+      itemsToProcess = [...(articleRows ?? []), ...(tweetRows ?? [])]
     }
     
     // Step 8: Filter items that have content (description or article text)
@@ -140,9 +132,18 @@ export async function POST(req) {
       processedCount++
     }
     
-    // Step 11: Save updated items back to database (unless dry run requested)
+    // Step 11: Save updated items back to Supabase (unless dry run requested)
     if (!requestBody.dry) {
-      await writeDB(itemsToProcess)
+      const articleItems = itemsToProcess.filter(i => i.source === 'newsapi')
+      const tweetItems = itemsToProcess.filter(i => i.source !== 'newsapi')
+      await Promise.all([
+        articleItems.length > 0
+          ? supabase.from('articles').upsert(articleItems, { onConflict: 'id' })
+          : Promise.resolve(),
+        tweetItems.length > 0
+          ? supabase.from('tweets').upsert(tweetItems, { onConflict: 'id' })
+          : Promise.resolve(),
+      ])
     }
     
     // Step 12: Return results with count of processed items

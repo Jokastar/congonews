@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { readDB, writeDB } from '../../../../lib/db.js'
+import { supabase } from '../../../../lib/supabase.js'
 import { createHash } from 'crypto'
 
 // NewsAPI free tier: 100 requests/day, headlines only
@@ -53,18 +53,16 @@ export async function GET() {
         videos: null,
       }))
 
-    // Step 3: Deduplicate against existing db entries
-    const existing = await readDB()
-    const existingIds = new Set(existing.map(item => item.id))
-    const newArticles = normalized.filter(a => !existingIds.has(a.id))
+    // Step 3: Upsert into Supabase (dedup handled by onConflict)
+    const { error } = await supabase
+      .from('articles')
+      .upsert(normalized, { onConflict: 'id', ignoreDuplicates: true })
 
-    // Step 4: Save to db
-    await writeDB([...existing, ...newArticles])
+    if (error) throw new Error(error.message)
 
     return NextResponse.json({
       fetched: allArticles.length,
-      saved: newArticles.length,
-      duplicatesSkipped: normalized.length - newArticles.length,
+      saved: normalized.length,
     })
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })

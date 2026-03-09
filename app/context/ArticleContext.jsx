@@ -34,13 +34,13 @@ export function ArticleProvider({ children }) {
     return `${stepName}: ${baseMsg}`
   }
 
-  // Load articles from db.json on mount
+  // Load articles from Supabase on mount
   useEffect(() => {
     const loadArticles = async () => {
       try {
-        const res = await fetch("/api/articles/get-all")
+        const res = await fetch("/api/news")
         const data = await res.json()
-        setArticles(data.items || [])
+        setArticles(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error("Failed to load articles:", err)
       }
@@ -87,9 +87,9 @@ export function ArticleProvider({ children }) {
       }
 
       // Step 4: Reload articles
-      const getRes = await fetch("/api/articles/get-all")
+      const getRes = await fetch("/api/news")
       const freshData = await getRes.json()
-      setArticles(freshData.items || [])
+      setArticles(Array.isArray(freshData) ? freshData : [])
 
       return { scrapeData, enrichData, classifyData }
     } catch (err) {

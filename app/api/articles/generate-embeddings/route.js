@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
-import { readDB, writeDB } from '../../../../lib/db.js';
+import { supabase } from '../../../../lib/supabase.js';
 import { getEmbedding } from '../../../../lib/embeddings.js';
 
-// This route generates embeddings for articles that don't have them yet
-// It reads articles from db.json, generates embeddings, and saves them back
-
-async function generateArticleEmbedding(content) {
+async function generateEmbedding(content) {
   try {
-    const embedding = await getEmbedding(content);
-    return embedding;
+    return await getEmbedding(content);
   } catch (error) {
     console.error('Error generating embedding:', error);
     return null;
@@ -17,63 +13,63 @@ async function generateArticleEmbedding(content) {
 
 export async function POST() {
   try {
-    // Step 1: Read all articles from db.json
-    const articles = await readDB();
-    
-    if (!Array.isArray(articles) || articles.length === 0) {
-      return NextResponse.json({ 
-        message: 'No articles to enrich',
-        enrichedCount: 0,
-        totalArticles: 0
-      });
+    // Step 1: Fetch records without embeddings from both tables
+    const [{ data: articleRows, error: e1 }, { data: tweetRows, error: e2 }] = await Promise.all([
+      supabase.from('articles').select('*').is('embedding', null),
+      supabase.from('tweets').select('*').is('embedding', null),
+    ]);
+
+    if (e1) throw new Error(e1.message);
+    if (e2) throw new Error(e2.message);
+
+    const allWithout = [
+      ...(articleRows ?? []).map(r => ({ ...r, _table: 'articles' })),
+      ...(tweetRows ?? []).map(r => ({ ...r, _table: 'tweets' })),
+    ];
+
+    if (allWithout.length === 0) {
+      return NextResponse.json({ message: 'All records already have embeddings', enrichedCount: 0 });
     }
 
-    // Step 2: Filter articles without embeddings
-    const articlesToEnrich = articles.filter(article => !article.embedding);
-    
-    if (articlesToEnrich.length === 0) {
-      return NextResponse.json({ 
-        message: 'All articles already have embeddings',
-        enrichedCount: 0,
-        totalArticles: articles.length
-      });
-    }
-
-    // Step 3: Generate embeddings for articles missing them
+    // Step 2: Generate and save embeddings one by one
     let enrichedCount = 0;
-    for (const article of articlesToEnrich) {
-      // Step 3a: Prepare text for embedding (title + description + content)
+    for (const record of allWithout) {
+      const { _table, ...row } = record;
       const textToEmbed = [
-        article.title,
-        article.description,
-        article.content?.full_text || article.content || ''
+        row.title,
+        row.description,
+        row.content?.full_text || row.content || ''
       ].filter(Boolean).join('\n\n');
 
-      // Step 3b: Generate embedding via Gemini API
-      const embedding = await generateArticleEmbedding(textToEmbed);
-      
-      if (embedding) {
-        article.embedding = embedding;
-        enrichedCount++;
-        console.log(`Generated embedding for: ${article.title || article.id}`);
+      const embedding = await generateEmbedding(textToEmbed);
+      if (!embedding) continue;
+
+      const { error: updateError } = await supabase
+        .from(_table)
+        .update({ embedding })
+        .eq('id', row.id);
+
+      if (updateError) {
+        console.error(`Failed to update embedding for ${row.id}:`, updateError.message);
+        continue;
       }
+
+      enrichedCount++;
+      console.log(`Generated embedding for: ${row.title || row.id}`);
     }
 
-    // Step 4: Save updated articles with embeddings back to db.json
-    await writeDB(articles);
-
-    return NextResponse.json({ 
-      message: `Successfully generated embeddings for ${enrichedCount} articles`,
+    return NextResponse.json({
+      message: `Successfully generated embeddings for ${enrichedCount} records`,
       enrichedCount,
-      totalArticles: articles.length,
-      skipped: articlesToEnrich.length - enrichedCount
+      totalWithout: allWithout.length,
+      skipped: allWithout.length - enrichedCount,
     });
 
   } catch (error) {
     console.error('Embedding generation error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Failed to generate embeddings',
-      message: error.message 
+      message: error.message
     }, { status: 500 });
   }
 }

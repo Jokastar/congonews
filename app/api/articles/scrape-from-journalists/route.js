@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server'; 
-import journalistList from '../../../../lib/journalistList.js';
-import { readDB, writeDB } from '../../../../lib/db.js';
+import { NextResponse } from 'next/server';
+import { supabase } from '../../../../lib/supabase.js';
 
 // This route scrapes tweets from DRC journalists using Bright Data HTTP API
 // Env vars required: BRIGHTDATA_API_TOKEN, BRIGHTDATA_DATASET_ID
@@ -34,8 +33,25 @@ export async function GET() {
     return NextResponse.json({ error: 'BRIGHTDATA_DATASET_ID not set' }, { status: 400 })
   }
 
-  // Step 2: Use journalist list directly (already in Bright Data input schema format)
-  const inputs = journalistList
+  // Step 2: Load active sources from Supabase and format for BrightData
+  const { data: sourcesData, error: sourcesError } = await supabase
+    .from('sources')
+    .select('url, start_date, end_date')
+    .eq('active', true)
+
+  if (sourcesError) {
+    return NextResponse.json({ error: `Failed to load sources: ${sourcesError.message}` }, { status: 500 })
+  }
+  if (!sourcesData || sourcesData.length === 0) {
+    return NextResponse.json({ error: 'No active sources found in sources table' }, { status: 400 })
+  }
+
+  // Group all URLs into the BrightData profiles_array input format
+  const inputs = [{
+    urls: sourcesData.map(s => s.url),
+    start_date: sourcesData[0].start_date || '',
+    end_date: sourcesData[0].end_date || '',
+  }]
 
   // Step 3: Define which tweet fields to fetch from Bright Data
   const custom_output_fields = [
@@ -190,8 +206,7 @@ export async function GET() {
             )
           }
           
-          // Step 12a: Save tweets to db.json (filter out metadata)
-          const existingData = await readDB()
+          // Step 12a: Save tweets to Supabase (dedup handled by onConflict)
           const newTweets = snapshotItems.filter(item => item.id && (item.description || item.user_posted))
 
           if (newTweets.length === 0) {
@@ -204,17 +219,17 @@ export async function GET() {
             })
           }
 
-          const existingIds = new Set(existingData.map(item => item.id))
-          const deduplicatedNewTweets = newTweets.filter(item => !existingIds.has(item.id))
-          const updatedData = [...existingData, ...deduplicatedNewTweets]
-          await writeDB(updatedData)
-          
-          return NextResponse.json({ 
-            source: 'brightdata', 
+          const { error: upsertError } = await supabase
+            .from('tweets')
+            .upsert(newTweets, { onConflict: 'id', ignoreDuplicates: true })
+
+          if (upsertError) throw new Error(upsertError.message)
+
+          return NextResponse.json({
+            source: 'brightdata',
             snapshotId,
             tweets: snapshotItems,
-            saved: deduplicatedNewTweets.length,
-            duplicatesSkipped: newTweets.length - deduplicatedNewTweets.length
+            saved: newTweets.length,
           })
         }
 

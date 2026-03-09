@@ -1,16 +1,24 @@
 import { NextResponse } from 'next/server'
-import { readDB, writeDB } from '../../../lib/db.js'
+import { supabase } from '../../../lib/supabase.js'
 
 export async function DELETE() {
-  // Remove all news data (except theme summaries if you want to keep them)
-  await writeDB([])
+  const [{ error: e1 }, { error: e2 }] = await Promise.all([
+    supabase.from('articles').delete().neq('id', ''),
+    supabase.from('tweets').delete().neq('id', ''),
+  ])
+  if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
+  if (e2) return NextResponse.json({ error: e2.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
 
 export async function GET() {
-  // Return all news items (not summaries)
-  const db = await readDB()
-  console.log("GET /api/news - total items in DB:", db.length); 
-  console.log("GET /api/news - returning items:", db.length);
-  return NextResponse.json(db)
+  const [{ data: articles, error: e1 }, { data: tweets, error: e2 }] = await Promise.all([
+    supabase.from('articles').select('*'),
+    supabase.from('tweets').select('*'),
+  ])
+  if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
+  if (e2) return NextResponse.json({ error: e2.message }, { status: 500 })
+  const all = [...(articles ?? []), ...(tweets ?? [])]
+  console.log('GET /api/news - total items in DB:', all.length)
+  return NextResponse.json(all)
 }

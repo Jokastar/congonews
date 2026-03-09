@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { writeDB, readDB } from '../lib/db.js'
 import { getEmbedding } from '../lib/embeddings.js'
 import { THEMES } from '../lib/themes.js'
 
@@ -34,18 +33,13 @@ describe('Embedding and theme assignment', () => {
       { id: '1', text: 'The president gave a speech about the government.' },
       { id: '2', text: 'The football team won the championship.' }
     ]
-    // Generate embeddings
+    // Generate embeddings (in-memory only)
     for (const item of items) {
       item.embedding = await getEmbedding(item.text)
       expect(Array.isArray(item.embedding)).toBe(true)
       expect(item.embedding.length).toBeGreaterThan(0)
       console.log(`Embedding for '${item.text.slice(0, 30)}...':`, item.embedding.slice(0, 5), '...')
     }
-    // Write to DB
-    await writeDB(items)
-    const db = await readDB()
-    expect(db[0].embedding).toBeDefined()
-    expect(db[1].embedding).toBeDefined()
     // Compute theme centroids
     const centroids = {}
     for (const theme of THEMES) {
@@ -56,7 +50,7 @@ describe('Embedding and theme assignment', () => {
       centroids[theme.name] = embs[0].map((_, i) => embs.reduce((sum, v) => sum + v[i], 0) / embs.length)
     }
     // Assign themes
-    for (const item of db) {
+    for (const item of items) {
       item.theme = await assignTheme(item, centroids)
       expect(typeof item.theme).toBe('string')
       console.log(`Assigned theme for '${item.text.slice(0, 30)}...':`, item.theme)

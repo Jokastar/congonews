@@ -14,7 +14,7 @@ export default function EmbeddingAllTweetsButton() {
       const res = await fetch("/api/themes/classify-articles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dry: false }) // triggers embedding/classification for all in db.json
+        body: JSON.stringify({ dry: false }) // triggers embedding/classification for all records in Supabase
       })
       const data = await res.json()
       setResult(data)
