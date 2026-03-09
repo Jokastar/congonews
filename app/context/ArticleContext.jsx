@@ -22,7 +22,16 @@ export function ArticleProvider({ children }) {
       return `${stepName}: ${responseData.error || fallbackMessage} (${detailedError})`
     }
 
-    return `${stepName}: ${responseData.error || responseData.message || fallbackMessage}`
+    const baseMsg = responseData.error || responseData.message || fallbackMessage
+    if (responseData.body) {
+      const bodyDetail =
+        typeof responseData.body === "object"
+          ? JSON.stringify(responseData.body)
+          : String(responseData.body)
+      return `${stepName}: ${baseMsg} — ${bodyDetail}`
+    }
+
+    return `${stepName}: ${baseMsg}`
   }
 
   // Load articles from db.json on mount

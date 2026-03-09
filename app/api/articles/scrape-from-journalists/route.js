@@ -34,12 +34,8 @@ export async function GET() {
     return NextResponse.json({ error: 'BRIGHTDATA_DATASET_ID not set' }, { status: 400 })
   }
 
-  // Step 2: Configure request inputs with journalist URLs (no date filters)
-  const inputs = [
-    {
-      urls: journalistList,
-    },
-  ]
+  // Step 2: Use journalist list directly (already in Bright Data input schema format)
+  const inputs = journalistList
 
   // Step 3: Define which tweet fields to fetch from Bright Data
   const custom_output_fields = [
@@ -69,7 +65,7 @@ export async function GET() {
   }
 
   // Step 5: Construct trigger URL with dataset configuration
-  const brightDataTriggerUrl = `https://api.brightdata.com/datasets/v3/trigger?dataset_id=${datasetId}&include_errors=true&type=discover_new&discover_by=profiles_array&limit_per_input=3`
+  const brightDataTriggerUrl = `https://api.brightdata.com/datasets/v3/trigger?dataset_id=${datasetId}&include_errors=true&type=discover_new&discover_by=profiles_array`
 
   try {
     // Step 6: Send POST request to trigger Bright Data scraping job

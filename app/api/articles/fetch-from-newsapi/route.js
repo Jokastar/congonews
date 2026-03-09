@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { readDB, writeDB } from '../../../../lib/db.js'
+import { createHash } from 'crypto'
 
 // NewsAPI free tier: 100 requests/day, headlines only
 // Docs: https://newsapi.org/docs/endpoints/everything
@@ -8,32 +9,39 @@ const NEWSAPI_KEY = process.env.NEWSAPI_KEY
 const SEARCH_QUERY = '"République démocratique du Congo" OR "RD Congo" OR "Congo-Kinshasa" OR "Democratic Republic of the Congo" OR "DR Congo"'
 const PAGE_SIZE = 20
 
+async function fetchByLanguage(language) {
+  const url = new URL('https://newsapi.org/v2/everything')
+  url.searchParams.set('q', SEARCH_QUERY)
+  url.searchParams.set('language', language)
+  url.searchParams.set('sortBy', 'publishedAt')
+  url.searchParams.set('pageSize', PAGE_SIZE)
+  url.searchParams.set('apiKey', NEWSAPI_KEY)
+
+  const res = await fetch(url.toString())
+  const data = await res.json()
+  if (data.status !== 'ok') throw new Error(data.message || `NewsAPI error (${language})`)
+  return data.articles
+}
+
 export async function GET() {
   if (!NEWSAPI_KEY) {
     return NextResponse.json({ error: 'Missing NEWSAPI_KEY in .env' }, { status: 400 })
   }
 
   try {
-    // Step 1: Fetch latest articles about Congo from NewsAPI
-    const url = new URL('https://newsapi.org/v2/everything')
-    url.searchParams.set('q', SEARCH_QUERY)
-    url.searchParams.set('language', 'fr')
-    url.searchParams.set('sortBy', 'publishedAt')
-    url.searchParams.set('pageSize', PAGE_SIZE)
-    url.searchParams.set('apiKey', NEWSAPI_KEY)
+    // Step 1: Fetch French and English articles in parallel (costs 2 requests)
+    const [frArticles, enArticles] = await Promise.all([
+      fetchByLanguage('fr'),
+      fetchByLanguage('en'),
+    ])
 
-    const res = await fetch(url.toString())
-    const data = await res.json()
-
-    if (data.status !== 'ok') {
-      return NextResponse.json({ error: data.message || 'NewsAPI error' }, { status: 500 })
-    }
+    const allArticles = [...frArticles, ...enArticles]
 
     // Step 2: Normalize articles to match our db schema
-    const normalized = data.articles
+    const normalized = allArticles
       .filter(a => a.title && a.title !== '[Removed]')
       .map(a => ({
-        id: `newsapi_${Buffer.from(a.url).toString('base64').slice(0, 20)}`,
+        id: `newsapi_${createHash('md5').update(a.url).digest('hex')}`,
         source: 'newsapi',
         name: a.source?.name || a.author || 'Unknown',
         description: a.description || a.title,
@@ -54,7 +62,7 @@ export async function GET() {
     await writeDB([...existing, ...newArticles])
 
     return NextResponse.json({
-      fetched: data.articles.length,
+      fetched: allArticles.length,
       saved: newArticles.length,
       duplicatesSkipped: normalized.length - newArticles.length,
     })
