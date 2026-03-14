@@ -43,6 +43,42 @@
   --light-gray: #7A7A7A; 
 }
 
+/* ── Typography scale ─────────────────────────────────────────── */
+@layer utilities {
+  .fs-hero     { font-size: clamp(3rem,      13vw,  12.5rem);  }
+  .fs-subtitle { font-size: clamp(1.125rem,   3vw,   1.5rem);  }
+  .fs-section  { font-size: clamp(0.9375rem,  1.5vw, 1rem);    }
+  .fs-heading  { font-size: clamp(1rem,       1.5vw, 1.125rem); }
+  .fs-body     { font-size: clamp(0.8125rem,  1.2vw, 0.875rem); }
+  .fs-caption  { font-size: clamp(0.6875rem,  1vw,   0.75rem); }
+  .fs-close    { font-size: clamp(1.125rem,   1.5vw, 1.25rem); }
+  .fs-filter   { font-size: clamp(0.875rem,   1.5vw, 1rem);    }
+  .fs-menu     { font-size: clamp(2.5rem,     8vw,   4rem);    }
+
+  .btn {
+    font-size: clamp(0.8125rem, 1.2vw, 0.875rem);
+    padding: 0.375rem 1rem;
+    border-radius: 40px; 
+    cursor: pointer;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  @media (max-width: 425px) {
+    .btn { width: 100%; text-align: center; }
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e0e0e0 25%, #ececec 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
 .text-blue-gradient {
   background: linear-gradient(90deg, #8585E2 18%, #0A0A75 100%);
   -webkit-background-clip: text;
@@ -67,6 +103,6 @@ html, body {
 }
 
 body {
-    padding: 40px;
-    background-color: #f8f8f8; 
+    padding: clamp(20px, 3vw, 40px);
+    background-color: #f8f8f8;
 }

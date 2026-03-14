@@ -19,14 +19,14 @@ export default function ArticleCard({ article }) {
             className="w-full aspect-video object-cover object-top rounded"
           />
           {article.theme && (
-            <span className="absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 capitalize font-medium">
+            <span className="absolute top-2 left-2 fs-caption px-2 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 capitalize font-medium">
               {article.theme.replace("_", " ")}
             </span>
           )}
         </div>
       ) : article.theme && (
         <div className="mb-3">
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
+          <span className="fs-caption px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
             {article.theme.replace("_", " ")}
           </span>
         </div>
@@ -34,18 +34,18 @@ export default function ArticleCard({ article }) {
 
       {/* Title */}
       {article.title && (
-        <p className="text-lg font-bold leading-snug line-clamp-3">{article.title}</p>
+        <p className="fs-heading font-bold leading-snug line-clamp-3">{article.title}</p>
       )}
 
       {/* Description */}
       {article.description && article.description !== article.title && (
-        <p className="text-sm mt-2 text-gray-600 line-clamp-4">{article.description}</p>
+        <p className="fs-body mt-2 text-gray-600 line-clamp-4">{article.description}</p>
       )}
 
       <div className="flex-1" />
 
       {/* Source footer */}
-      <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
+      <div className="flex items-center justify-between mt-3 fs-caption text-gray-400">
         <div className="flex items-center gap-1.5">
           {domain && (
             <img

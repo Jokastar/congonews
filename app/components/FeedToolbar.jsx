@@ -4,7 +4,7 @@ import { createPortal } from "react-dom"
 import { useFeed } from "../context/FeedContext"
 import SourcesManager from "./SourcesManager"
 
-const BTN = "text-sm text-white px-6 py-2.5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+const BTN = "btn text-white disabled:opacity-50 disabled:cursor-not-allowed"
 
 /** Calls an API fetch, throws if not ok or data.ok === false */
 async function apiFetch(url, options) {
@@ -88,11 +88,11 @@ export default function FeedToolbar() {
     <>
       <div className="flex flex-col items-center gap-2">
         {message && (
-          <pre className={`text-sm ${message.type === "error" ? "text-red-500" : "text-gray-500"}`}>
+          <pre className={`fs-body ${message.type === "error" ? "text-red-500" : "text-gray-500"}`}>
             {message.text}
           </pre>
         )}
-        <div className="flex gap-2 flex-wrap justify-center bg-gray-300 px-2 py-2 rounded-full">
+        <div className="grid grid-cols-2 gap-2 justify-items-center bg-gray-300 px-2 py-2 rounded-2xl min-[426px]:flex min-[426px]:flex-wrap min-[426px]:justify-center min-[426px]:rounded-full">
           <button
             onClick={fetchX}
             disabled={busy}
@@ -140,7 +140,7 @@ export default function FeedToolbar() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6 relative">
             <button
               onClick={() => setShowSources(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl leading-none cursor-pointer"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 fs-close leading-none cursor-pointer"
             >
               ✕
             </button>

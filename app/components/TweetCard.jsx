@@ -32,14 +32,14 @@ export default function TweetCard({ article }) {
             />
           )}
           {article.theme && (
-            <span className="absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 capitalize font-medium">
+            <span className="absolute top-2 left-2 fs-caption px-2 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 capitalize font-medium">
               {article.theme.replace("_", " ")}
             </span>
           )}
         </div>
       ) : article.theme && (
         <div className="mb-3">
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
+          <span className="fs-caption px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
             {article.theme.replace("_", " ")}
           </span>
         </div>
@@ -47,7 +47,7 @@ export default function TweetCard({ article }) {
 
       {/* Author row: name + avatar */}
       <div className="flex items-center gap-3">
-        <p className="text-lg font-bold leading-snug line-clamp-1">{article.name}</p>
+        <p className="fs-heading font-bold leading-snug line-clamp-1">{article.name}</p>
         {article.profile_image_link ? (
           <img
             src={article.profile_image_link}
@@ -61,13 +61,13 @@ export default function TweetCard({ article }) {
 
       {/* Tweet text */}
       {article.description && (
-        <p className="text-sm mt-2 text-gray-600 line-clamp-4">{article.description}</p>
+        <p className="fs-body mt-2 text-gray-600 line-clamp-4">{article.description}</p>
       )}
 
       <div className="flex-1" />
 
       {/* Footer */}
-      <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
+      <div className="flex items-center justify-between mt-3 fs-caption text-gray-400">
         <div className="flex items-center gap-1.5 bg-black text-white px-2 py-1 rounded-full">
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.252 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />

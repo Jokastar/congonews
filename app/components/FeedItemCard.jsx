@@ -23,7 +23,7 @@ export default function FeedItemCard({ article }) {
         ) : (
           <div className="w-9 h-9 rounded-full bg-gray-400 flex-shrink-0" />
         )}
-        <span className="text-sm font-semibold leading-tight line-clamp-1">{article.name}</span>
+        <span className="fs-body font-semibold leading-tight line-clamp-1">{article.name}</span>
       </div>
 
       {/* Media: video > carousel of images */}
@@ -49,7 +49,7 @@ export default function FeedItemCard({ article }) {
 
       {/* Repost indicator */}
       {article.retweet && article.retweet_user && (
-        <div className="flex items-center gap-1 text-xs text-gray-400 mb-2 mt-2">
+        <div className="flex items-center gap-1 fs-caption text-gray-400 mb-2 mt-2">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46L18.5 16.45V8c0-1.1-.896-2-2-2z"/>
           </svg>
@@ -59,16 +59,16 @@ export default function FeedItemCard({ article }) {
 
       {/* Title (NewsAPI only) */}
       {article.title && (
-        <p className="text-sm font-bold mt-2 leading-snug line-clamp-3">{article.title}</p>
+        <p className="fs-body font-bold mt-2 leading-snug line-clamp-3">{article.title}</p>
       )}
 
       {/* Description / tweet text — hide if identical to title */}
       {article.description && article.description !== article.title && (
-        <p className="text-sm mt-1 text-gray-600 line-clamp-4">{article.description}</p>
+        <p className="fs-body mt-1 text-gray-600 line-clamp-4">{article.description}</p>
       )}
 
       {/* Source footer */}
-      <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
+      <div className="flex items-center justify-between mt-3 fs-caption text-gray-400">
         <div className="flex items-center gap-1">
           {article.source === 'newsapi' ? (
             <>
@@ -94,7 +94,7 @@ export default function FeedItemCard({ article }) {
       {/* Theme badge */}
       {article.theme && (
         <div className="mt-2">
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
+          <span className="fs-caption px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
             {article.theme.replace("_", " ")}
           </span>
         </div>
