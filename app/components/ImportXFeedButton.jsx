@@ -19,7 +19,8 @@ export default function ImportXFeedButton() {
     <div className="mb-4">
       <button
         onClick={handleImport}
-        className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-green-700"
+        className="text-sm text-white px-6 py-2.5 rounded-full disabled:opacity-50 cursor-pointer"
+        style={{ backgroundImage: 'linear-gradient(90deg, #444444 6%, #111116 48%)' }}
         disabled={loading}
       >
         {loading ? "Importing & Enriching..." : "Import from X"}

@@ -27,7 +27,7 @@ async function fetchByLanguage(language) {
 
 export async function GET() {
   if (!NEWSAPI_KEY) {
-    return NextResponse.json({ error: 'Missing NEWSAPI_KEY in .env' }, { status: 400 })
+    return NextResponse.json({ ok: false, error: 'Missing NEWSAPI_KEY in .env' }, { status: 400 })
   }
 
   try {
@@ -62,8 +62,8 @@ export async function GET() {
 
     if (error) throw new Error(error.message)
 
-    return NextResponse.json({ fetched: normalized.length, saved: normalized.length })
+    return NextResponse.json({ ok: true, message: `Imported ${normalized.length} articles from NewsAPI`, fetched: normalized.length, saved: normalized.length })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 })
   }
 }

@@ -44,7 +44,8 @@ export default function ImportNewsApiButton() {
       <button
         onClick={handleImport}
         disabled={loading}
-        className="bg-orange-500 text-white px-4 py-2 rounded disabled:opacity-50"
+        className="text-sm text-white px-6 py-2.5 rounded-full disabled:opacity-50 cursor-pointer"
+        style={{ backgroundImage: 'linear-gradient(90deg, #D1D5DB 0%, #374151 100%)' }}
       >
         {loading ? "Importing from NewsAPI..." : "Import from NewsAPI"}
       </button>

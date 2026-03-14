@@ -6,7 +6,12 @@ const config = {
     "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        silk: ['SilkSerif', 'serif'],
+        satoshi: ['Satoshi', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

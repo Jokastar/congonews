@@ -26,7 +26,8 @@ export default function ClearFeedButton() {
     <div className="mb-4">
       <button
         onClick={handleClear}
-        className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+        className="text-sm text-white px-6 py-2.5 rounded-full disabled:opacity-50 cursor-pointer"
+        style={{ backgroundImage: 'linear-gradient(90deg, #FF6B6B 0%, #8B0000 100%)' }}
         disabled={loading}
       >
         {loading ? "Clearing..." : "Clear Feed"}

@@ -1,31 +1,29 @@
 "use client"
 
-import ImportXFeedButton from "./components/ImportXFeedButton"
-import ClearFeedButton from "./components/ClearFeedButton"
-import ImportNewsApiButton from "./components/ImportNewsApiButton"
+import FeedToolbar from "./components/FeedToolbar"
 import FeedGrid from "./components/FeedGrid"
-import SourcesManager from "./components/SourcesManager"
 import ThemeFilterBar from "./components/ThemeFilterBar"
-import EnrichMissingButton from "./components/EnrichMissingButton"
 import { FeedProvider } from "./context/FeedContext"
 
 export default function Home() {
   return (
     <FeedProvider>
-      <main>
-        <h1>Congo News</h1>
-        <div className="mb-4 space-y-2">
-          <ImportXFeedButton />
-          <ImportNewsApiButton />
-          <ClearFeedButton />
-          <SourcesManager />
-          <EnrichMissingButton />
+      <header className="sticky">
+        <div className="flex justify-center  gap-10 flex-col items-center mb-20">
+          <h1 className="uppercase text-[200px] leading-tight-minus font-silk text-center font-medium text-blue-gradient m-0 block"> Le Cercle</h1>
+          <p className="text-2xl font-medium">Toute l'actualité congolaise, à portée de main</p>
         </div>
-        <ThemeFilterBar />
+         <ThemeFilterBar />
+      </header>
+      <main>
         <FeedGrid />
       </main>
+      <footer className="fixed bottom-20 w-full flex justify-center">
+        <FeedToolbar />
+      </footer>
     </FeedProvider>
   )
 }
+
 
 

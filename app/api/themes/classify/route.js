@@ -82,7 +82,7 @@ export async function POST(req) {
         supabase.from('articles').delete({ count: 'exact' }).is('theme', null),
         supabase.from('tweets').delete({ count: 'exact' }).is('theme', null),
       ])
-      return NextResponse.json({ updated: 0, deleted: (delA ?? 0) + (delT ?? 0), note: 'No items to classify' })
+      return NextResponse.json({ ok: true, message: 'No items to classify', updated: 0, deleted: (delA ?? 0) + (delT ?? 0) })
     }
 
     let updated = 0
@@ -117,9 +117,9 @@ export async function POST(req) {
     if (dT) console.error('Delete null tweets error:', dT.message)
     const deleted = (delA ?? 0) + (delT ?? 0)
 
-    return NextResponse.json({ updated, failed, deleted, total: allItems.length })
+    return NextResponse.json({ ok: true, message: `Classified ${updated} items, deleted ${deleted} non-DRC`, updated, failed, deleted, total: allItems.length })
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 })
+    return NextResponse.json({ ok: false, error: String(error) }, { status: 500 })
   }
 }
 

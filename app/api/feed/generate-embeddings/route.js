@@ -31,7 +31,7 @@ export async function POST() {
     ];
 
     if (allWithout.length === 0) {
-      return NextResponse.json({ message: 'All records already have embeddings', enrichedCount: 0 });
+      return NextResponse.json({ ok: true, message: 'All records already have embeddings', enrichedCount: 0 });
     }
 
     let enrichedCount = 0;

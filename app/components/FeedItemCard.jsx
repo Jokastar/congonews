@@ -21,7 +21,7 @@ export default function FeedItemCard({ article }) {
             />
           </div>
         ) : (
-          <div className="w-9 h-9 rounded-full bg-gray-300 flex-shrink-0" />
+          <div className="w-9 h-9 rounded-full bg-gray-400 flex-shrink-0" />
         )}
         <span className="text-sm font-semibold leading-tight line-clamp-1">{article.name}</span>
       </div>

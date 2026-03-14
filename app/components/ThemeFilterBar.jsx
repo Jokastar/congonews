@@ -11,36 +11,40 @@ const THEMES = [
   { id: "fait_divers", label: "Fait divers" },
 ]
 
+function AnimatedLabel({ label }) {
+  return (
+    <span className="relative flex overflow-hidden h-[1.5em]">
+      <span className="translate-y-0 group-hover:-translate-y-full transition-transform duration-400 ease-in-out">{label}</span>
+      <span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-in-out">{label}</span>
+    </span>
+  )
+}
+
 export default function ThemeFilterBar() {
   const { activeTheme, setActiveTheme, articles } = useFeed()
 
   const countFor = (themeId) => articles.filter((a) => a.theme === themeId).length
-  const totalCount = articles.length
 
   return (
-    <div className="flex flex-wrap gap-2 px-10 py-4">
+    <div className="flex flex-wrap gap-4 pb-5 justify-center border-b border-b-black">
       <button
         onClick={() => setActiveTheme(null)}
-        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-          activeTheme === null
-            ? "bg-gray-900 text-white"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+        className={`group px-4 rounded-full cursor-pointer ${
+          activeTheme === null ? "font-medium" : "font-regular"
         }`}
       >
-        Tout ({totalCount})
+        <AnimatedLabel label="Tous" />
       </button>
 
-      {THEMES.map((theme) => (
+      {THEMES.filter((theme) => countFor(theme.id) > 0).map((theme) => (
         <button
           key={theme.id}
           onClick={() => setActiveTheme(activeTheme === theme.id ? null : theme.id)}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-            activeTheme === theme.id
-              ? "bg-gray-900 text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className={`group px-4 rounded-full cursor-pointer ${
+            activeTheme === theme.id ? "font-medium" : "font-regular"
           }`}
         >
-          {theme.label} ({countFor(theme.id)})
+          <AnimatedLabel label={theme.label} />
         </button>
       ))}
     </div>
