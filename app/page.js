@@ -24,7 +24,7 @@ function Page() {
       <main>
         <FeedGrid />
       </main>
-      <footer className="fixed bottom-20 left-0 w-full flex justify-center max-[425px]:bottom-[40px]">
+      <footer className="fixed bottom-[100px] left-0 w-full flex justify-center max-[425px]:bottom-[60px]">
         <FeedToolbar />
       </footer>
     </>

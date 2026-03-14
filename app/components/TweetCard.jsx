@@ -1,6 +1,16 @@
 "use client"
 
+const THEME_COLORS = {
+  politique:   "#6923b0",
+  economie:    "#c0392b",
+  art:         "#ec4067",
+  culture:     "#ef5d60",
+  sport:       "#1a7a45",
+  fait_divers: "#311847",
+}
+
 export default function TweetCard({ article }) {
+  const pillStyle = { backgroundColor: THEME_COLORS[article.theme] ?? "#311847" }
   const mediaUrl = article.videos?.[0]?.video_url
   const imageUrl = article.external_image_urls?.[0] || article.photos?.[0]
 
@@ -32,14 +42,14 @@ export default function TweetCard({ article }) {
             />
           )}
           {article.theme && (
-            <span className="absolute top-2 left-2 fs-caption px-2 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 capitalize font-medium">
+            <span style={pillStyle} className="absolute top-2 left-2 fs-caption px-2 py-0.5 rounded-full text-white capitalize font-medium">
               {article.theme.replace("_", " ")}
             </span>
           )}
         </div>
       ) : article.theme && (
         <div className="mb-3">
-          <span className="fs-caption px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 capitalize">
+          <span style={pillStyle} className="fs-caption px-2 py-0.5 rounded-full text-white capitalize">
             {article.theme.replace("_", " ")}
           </span>
         </div>

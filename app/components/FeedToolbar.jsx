@@ -97,7 +97,7 @@ export default function FeedToolbar() {
             onClick={fetchX}
             disabled={busy}
             className={BTN}
-            style={{ backgroundColor: "#000000" }}
+            style={{ backgroundColor: "#311847" }}
           >
             {activeTask === "fetchX" ? "Fetching X..." : "Fetch X"}
           </button>
@@ -105,7 +105,7 @@ export default function FeedToolbar() {
             onClick={fetchNews}
             disabled={busy}
             className={BTN}
-            style={{ backgroundColor: "blue" }}
+            style={{ backgroundColor: "#6923b0" }}
           >
             {activeTask === "fetch" ? "Fetching News..." : "Fetch All"}
           </button>
@@ -114,7 +114,7 @@ export default function FeedToolbar() {
             onClick={() => setShowSources(true)}
             disabled={busy}
             className={BTN}
-            style={{ backgroundImage: "linear-gradient(90deg, #444444 6%, #111116 48%)" }}
+            style={{ backgroundImage: "linear-gradient(90deg, #a01a7d, #311847)" }}
           >
             Sources
           </button>
@@ -122,7 +122,7 @@ export default function FeedToolbar() {
             onClick={clearFeed}
             disabled={busy}
             className={BTN}
-            style={{ backgroundColor:"red" }}
+            style={{ backgroundColor: "#ec4067" }}
           >
             {activeTask === "clear" ? "Clearing..." : "Clear Feed"}
           </button>
